@@ -304,8 +304,8 @@ public class ForgeHooksClient
         return fovModifierEvent.getNewfov();
     }
 
-    public static double getFieldOfView(GameRenderer renderer, Camera info, double partialTick, double fov) {
-        EntityViewRenderEvent.FieldOfView event = new EntityViewRenderEvent.FieldOfView(renderer, info, partialTick, fov);
+    public static double getFieldOfView(GameRenderer renderer, Camera camera, double partialTick, double fov) {
+        EntityViewRenderEvent.FieldOfView event = new EntityViewRenderEvent.FieldOfView(renderer, camera, partialTick, fov);
         MinecraftForge.EVENT_BUS.post(event);
         return event.getFOV();
     }
@@ -372,21 +372,21 @@ public class ForgeHooksClient
         MinecraftForge.EVENT_BUS.post(new ScreenEvent.DrawScreenEvent.Post(screen, poseStack, mouseX, mouseY, partialTick));
     }
 
-    public static float getFogDensity(FogMode type, Camera info, float partial, float density)
+    public static float getFogDensity(FogMode type, Camera camera, float partialTick, float density)
     {
-        EntityViewRenderEvent.FogDensity event = new EntityViewRenderEvent.FogDensity(type, info, partial, density);
+        EntityViewRenderEvent.FogDensity event = new EntityViewRenderEvent.FogDensity(type, camera, partialTick, density);
         if (MinecraftForge.EVENT_BUS.post(event)) return event.getDensity();
         return -1;
     }
 
-    public static void onFogRender(FogMode type, Camera info, float partial, float distance)
+    public static void onFogRender(FogMode type, Camera camera, float partialTick, float distance)
     {
-        MinecraftForge.EVENT_BUS.post(new EntityViewRenderEvent.RenderFogEvent(type, info, partial, distance));
+        MinecraftForge.EVENT_BUS.post(new EntityViewRenderEvent.RenderFogEvent(type, camera, partialTick, distance));
     }
 
-    public static EntityViewRenderEvent.CameraSetup onCameraSetup(GameRenderer renderer, Camera info, float partial)
+    public static EntityViewRenderEvent.CameraSetup onCameraSetup(GameRenderer renderer, Camera camera, float partial)
     {
-        EntityViewRenderEvent.CameraSetup event = new EntityViewRenderEvent.CameraSetup(renderer, info, partial, info.getYRot(), info.getXRot(), 0);
+        EntityViewRenderEvent.CameraSetup event = new EntityViewRenderEvent.CameraSetup(renderer, camera, partial, camera.getYRot(), camera.getXRot(), 0);
         MinecraftForge.EVENT_BUS.post(event);
         return event;
     }
@@ -429,12 +429,12 @@ public class ForgeHooksClient
     }
 
     @SuppressWarnings("deprecation")
-    public static TextureAtlasSprite[] getFluidSprites(BlockAndTintGetter world, BlockPos pos, FluidState fluidStateIn)
+    public static TextureAtlasSprite[] getFluidSprites(BlockAndTintGetter level, BlockPos pos, FluidState fluidStateIn)
     {
         ResourceLocation overlayTexture = fluidStateIn.getType().getAttributes().getOverlayTexture();
         return new TextureAtlasSprite[] {
-                Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(fluidStateIn.getType().getAttributes().getStillTexture(world, pos)),
-                Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(fluidStateIn.getType().getAttributes().getFlowingTexture(world, pos)),
+                Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(fluidStateIn.getType().getAttributes().getStillTexture(level, pos)),
+                Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(fluidStateIn.getType().getAttributes().getFlowingTexture(level, pos)),
                 overlayTexture == null ? null : Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(overlayTexture),
         };
     }
@@ -699,7 +699,7 @@ public class ForgeHooksClient
     }
 
     public static void drawItemLayered(ItemRenderer renderer, BakedModel modelIn, ItemStack itemStackIn, PoseStack poseStack,
-                                       MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, boolean fabulous)
+                                       MultiBufferSource bufferIn, int packedLight, int packedOverlay, boolean fabulous)
     {
         for(com.mojang.datafixers.util.Pair<BakedModel,RenderType> layerModel : modelIn.getLayerModels(itemStackIn, fabulous))
         {
@@ -713,7 +713,7 @@ public class ForgeHooksClient
             } else {
                 ivertexbuilder = ItemRenderer.getFoilBuffer(bufferIn, rendertype, true, itemStackIn.hasFoil());
             }
-            renderer.renderModelLists(layer, itemStackIn, combinedLightIn, combinedOverlayIn, poseStack, ivertexbuilder);
+            renderer.renderModelLists(layer, itemStackIn, packedLight, packedOverlay, poseStack, ivertexbuilder);
         }
         net.minecraftforge.client.ForgeHooksClient.setRenderType(null);
     }
@@ -728,14 +728,14 @@ public class ForgeHooksClient
         return !(squareDistance > 4096.0f);
     }
 
-    public static void renderPistonMovedBlocks(BlockPos pos, BlockState state, PoseStack stack, MultiBufferSource bufferSource, Level level, boolean checkSides, int combinedOverlay, BlockRenderDispatcher blockRenderer) {
+    public static void renderPistonMovedBlocks(BlockPos pos, BlockState state, PoseStack stack, MultiBufferSource bufferSource, Level level, boolean checkSides, int packedOverlay, BlockRenderDispatcher blockRenderer) {
         RenderType.chunkBufferLayers().stream()
                 .filter(t -> ItemBlockRenderTypes.canRenderInLayer(state, t))
                 .forEach(rendertype ->
                 {
                     setRenderType(rendertype);
                     VertexConsumer ivertexbuilder = bufferSource.getBuffer(rendertype == RenderType.translucent() ? RenderType.translucentMovingBlock() : rendertype);
-                    blockRenderer.getModelRenderer().tesselateBlock(level, blockRenderer.getBlockModel(state), state, pos, stack, ivertexbuilder, checkSides, new Random(), state.getSeed(pos), combinedOverlay);
+                    blockRenderer.getModelRenderer().tesselateBlock(level, blockRenderer.getBlockModel(state), state, pos, stack, ivertexbuilder, checkSides, new Random(), state.getSeed(pos), packedOverlay);
                 });
         setRenderType(null);
     }
