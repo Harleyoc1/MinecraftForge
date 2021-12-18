@@ -177,9 +177,9 @@ public class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends DrawScreenEvent
         {
-            public Pre(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float renderPartialTicks)
+            public Pre(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float partialTick)
             {
-                super(screen, poseStack, mouseX, mouseY, renderPartialTicks);
+                super(screen, poseStack, mouseX, mouseY, partialTick);
             }
         }
 
@@ -188,9 +188,9 @@ public class ScreenEvent extends Event
          */
         public static class Post extends DrawScreenEvent
         {
-            public Post(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float renderPartialTicks)
+            public Post(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float partialTick)
             {
-                super(screen, poseStack, mouseX, mouseY, renderPartialTicks);
+                super(screen, poseStack, mouseX, mouseY, partialTick);
             }
         }
     }

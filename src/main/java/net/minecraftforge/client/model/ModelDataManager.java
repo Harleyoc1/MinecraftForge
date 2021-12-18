@@ -53,7 +53,7 @@ public class ModelDataManager
 
     private static void cleanCaches(Level level)
     {
-        Preconditions.checkNotNull(level, "World must not be null");
+        Preconditions.checkNotNull(level, "Level must not be null");
         Preconditions.checkArgument(level == Minecraft.getInstance().level, "Cannot use model data for a level other than the current client level");
         if (level != currentLevel.get())
         {

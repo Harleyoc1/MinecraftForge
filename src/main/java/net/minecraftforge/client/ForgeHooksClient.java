@@ -699,7 +699,7 @@ public class ForgeHooksClient
     }
 
     public static void drawItemLayered(ItemRenderer renderer, BakedModel modelIn, ItemStack itemStackIn, PoseStack poseStack,
-                                       MultiBufferSource bufferIn, int packedLight, int packedOverlay, boolean fabulous)
+                                       MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean fabulous)
     {
         for(com.mojang.datafixers.util.Pair<BakedModel,RenderType> layerModel : modelIn.getLayerModels(itemStackIn, fabulous))
         {
@@ -709,9 +709,9 @@ public class ForgeHooksClient
             VertexConsumer ivertexbuilder;
             if (fabulous)
             {
-                ivertexbuilder = ItemRenderer.getFoilBufferDirect(bufferIn, rendertype, true, itemStackIn.hasFoil());
+                ivertexbuilder = ItemRenderer.getFoilBufferDirect(bufferSource, rendertype, true, itemStackIn.hasFoil());
             } else {
-                ivertexbuilder = ItemRenderer.getFoilBuffer(bufferIn, rendertype, true, itemStackIn.hasFoil());
+                ivertexbuilder = ItemRenderer.getFoilBuffer(bufferSource, rendertype, true, itemStackIn.hasFoil());
             }
             renderer.renderModelLists(layer, itemStackIn, packedLight, packedOverlay, poseStack, ivertexbuilder);
         }
